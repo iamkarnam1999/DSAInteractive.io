@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSA recall — concepts and templates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pad:#E7ECE1;
+  --pad-rule:#C6D2BC;
+  --sheet:#F8FAF5;
+  --ink:#1A2733;
+  --ink-soft:#55636F;
+  --ink-faint:#8A96A0;
+  --blue:#2C5C89;
+  --red:#9B2B23;
+  --edge:#D3DCCA;
+  --shadow:0 1px 0 var(--edge);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--pad);
+  background-image:linear-gradient(var(--pad-rule) 1px,transparent 1px),linear-gradient(90deg,var(--pad-rule) 1px,transparent 1px);
+  background-size:26px 26px;
+  color:var(--ink);
+  font-family:Spectral,Georgia,serif;
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+
+/* shell */
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:0;min-height:100vh;max-width:1180px;margin:0 auto}
+.rail{border-right:1px solid var(--edge);padding:28px 20px 60px;background:rgba(248,250,245,.72)}
+.stage{padding:34px 40px 90px;background:var(--sheet);border-right:1px solid var(--edge)}
+
+.brand{font-weight:600;font-size:19px;letter-spacing:-.01em;margin:0 0 2px}
+.brand-sub{font-size:13px;color:var(--ink-faint);margin:0 0 26px;line-height:1.4}
+
+.nav{list-style:none;margin:0;padding:0}
+.nav li{margin:0 0 1px}
+.nav button{
+  width:100%;display:grid;grid-template-columns:22px 1fr auto;gap:9px;align-items:baseline;
+  background:none;border:0;padding:6px 8px;text-align:left;cursor:pointer;border-radius:3px;
+  font-family:inherit;font-size:14.5px;color:var(--ink-soft);line-height:1.35;
+}
+.nav button:hover{background:#EDF1E8;color:var(--ink)}
+.nav button[aria-current="true"]{background:#E3EAF2;color:var(--ink);font-weight:500}
+.nav .num{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-faint)}
+.nav .dot{width:7px;height:7px;border-radius:50%;background:var(--edge);align-self:center}
+.nav .dot.part{background:var(--blue);opacity:.42}
+.nav .dot.done{background:var(--blue)}
+.nav .dot.due{background:var(--red)}
+
+.railfoot{margin-top:24px;padding-top:16px;border-top:1px solid var(--edge);font-size:13px;color:var(--ink-faint)}
+.railfoot button{font-family:inherit;font-size:13px;background:none;border:0;color:var(--red);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+
+/* home */
+.queue{border:1px solid var(--edge);border-left:3px solid var(--blue);background:#fff;padding:26px 28px;margin:0 0 30px;max-width:640px}
+.queue .count{font-size:56px;line-height:1;font-weight:600;letter-spacing:-.03em;margin:0 0 4px}
+.queue .count.zero{color:var(--ink-faint)}
+.queue p{margin:0 0 18px;color:var(--ink-soft);max-width:52ch}
+h1{font-size:30px;font-weight:600;letter-spacing:-.02em;margin:0 0 6px;line-height:1.2}
+h2{font-size:21px;font-weight:600;margin:34px 0 10px;letter-spacing:-.01em}
+h3{font-size:16px;font-weight:600;margin:24px 0 6px}
+.lede{color:var(--ink-soft);margin:0 0 26px;max-width:64ch}
+p{max-width:68ch;margin:0 0 14px}
+ul{max-width:68ch;padding-left:20px}
+li{margin-bottom:5px}
+
+.btn{
+  font-family:inherit;font-size:15px;border:1px solid var(--ink);background:var(--ink);color:var(--sheet);
+  padding:9px 18px;cursor:pointer;border-radius:2px;
+}
+.btn:hover{background:#0F1A24}
+.btn.ghost{background:none;color:var(--ink);border-color:var(--edge)}
+.btn.ghost:hover{background:#EDF1E8}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.red{background:var(--red);border-color:var(--red)}
+.btn.blue{background:var(--blue);border-color:var(--blue)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 0}
+
+/* lesson */
+pre{
+  background:#F0F3EC;border:1px solid var(--edge);border-radius:2px;padding:14px 16px;overflow-x:auto;
+  font-size:13.5px;line-height:1.62;margin:14px 0;max-width:68ch;
+}
+pre .cm{color:var(--ink-faint)}
+code:not(pre code){background:#EDF1E8;padding:1px 4px;border-radius:2px;font-size:14px}
+table{border-collapse:collapse;margin:16px 0;font-size:14.5px;max-width:68ch;width:100%}
+th,td{text-align:left;padding:6px 12px 6px 0;border-bottom:1px solid var(--edge);vertical-align:top}
+th{font-weight:600;font-size:13px;color:var(--ink-soft)}
+.warn{border-left:3px solid var(--red);padding:2px 0 2px 15px;margin:16px 0;max-width:66ch;color:var(--ink-soft)}
+.warn strong{color:var(--red);font-weight:600}
+
+/* recall */
+.recall{max-width:680px}
+.meter{display:flex;gap:3px;margin:0 0 26px}
+.meter i{height:3px;flex:1;background:var(--edge)}
+.meter i.on{background:var(--blue)}
+.prompt{font-size:23px;line-height:1.42;font-weight:500;margin:0 0 6px;max-width:60ch;letter-spacing:-.01em}
+.tag{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-faint);margin:0 0 18px}
+textarea{
+  width:100%;min-height:150px;font-family:"IBM Plex Mono",monospace;font-size:14px;line-height:1.6;
+  padding:14px;border:1px solid var(--edge);background:#fff;color:var(--ink);border-radius:2px;resize:vertical;
+}
+textarea:focus{outline:2px solid var(--blue);outline-offset:-1px;border-color:var(--blue)}
+.hint{font-size:13px;color:var(--ink-faint);margin:8px 0 0}
+.answer{border-top:1px solid var(--edge);margin:28px 0 0;padding:22px 0 0;animation:rise .18s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.answer{animation:none}}
+.answer h4{margin:0 0 10px;font-size:13px;color:var(--ink-faint);font-weight:500;font-family:"IBM Plex Mono",monospace}
+.grade{display:flex;gap:10px;margin:26px 0 0;padding:18px 0 0;border-top:1px solid var(--edge);flex-wrap:wrap;align-items:center}
+.grade .q{font-size:14px;color:var(--ink-soft);margin-right:auto}
+.done-panel{border:1px solid var(--edge);border-left:3px solid var(--blue);background:#fff;padding:24px 26px;max-width:560px}
+
+@media (max-width:820px){
+  .wrap{grid-template-columns:1fr}
+  .rail{border-right:0;border-bottom:1px solid var(--edge);padding:20px 20px 24px}
+  .stage{padding:26px 20px 70px;border-right:0}
+  .nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:2px}
+  .prompt{font-size:20px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="rail">
+    <p class="brand">DSA recall</p>
+    <p class="brand-sub">Concepts and templates, tested by writing them out.</p>
+    <ul class="nav" id="nav"></ul>
+    <div class="railfoot">
+      <div id="stats" style="margin-bottom:10px"></div>
+      <button id="reset">Erase all progress</button>
+    </div>
+  </nav>
+  <main class="stage" id="stage"></main>
+</div>
+
+<script>
+/* ---------------- storage (guarded: falls back to memory) ---------------- */
+var mem = {};
+var store = {
+  get: function(k){ try { return localStorage.getItem(k); } catch(e){ return mem[k] || null; } },
+  set: function(k,v){ try { localStorage.setItem(k,v); } catch(e){ mem[k]=v; } }
+};
+var KEY = "dsa-recall-v1";
+var progress = {};
+try { progress = JSON.parse(store.get(KEY) || "{}"); } catch(e){ progress = {}; }
+function save(){ store.set(KEY, JSON.stringify(progress)); }
+
+/* Leitner intervals in days */
+var INTERVALS = [0,1,3,7,16,35];
+function today(){ return Math.floor(Date.now()/86400000); }
+function cardState(id){ return progress[id] || {box:0, due:0, seen:false}; }
+function isDue(id){ var s = cardState(id); return !s.seen || s.due <= today(); }
+function grade(id, ok){
+  var s = cardState(id);
+  var box = ok ? Math.min(s.box+1, INTERVALS.length-1) : 0;
+  progress[id] = { box: box, due: today() + INTERVALS[box], seen: true };
+  save();
+}
+
+/* ---------------- course content ---------------- */
+var T = [
+{
+ n:0, title:"Python toolkit",
+ lede:"The standard-library pieces that show up in almost every problem. Not knowing them costs time on every question.",
+ sections:[
+  {h:"The imports", b:`<pre><code>from collections import defaultdict, Counter, deque
+import heapq
+import bisect</code></pre>
+<p><code>defaultdict(list)</code> creates a missing key's default automatically, so <code>d[k].append(x)</code> works without checking whether the key exists. <code>defaultdict(int)</code> starts counters at zero.</p>
+<p><code>Counter(iterable)</code> builds a frequency dict in one line. Two Counters compare with <code>==</code>, which answers anagram questions directly.</p>`},
+  {h:"deque and why a list is not a queue", b:`<p><code>deque</code> is double-ended: <code>append</code>/<code>pop</code> at the right, <code>appendleft</code>/<code>popleft</code> at the left, all O(1).</p>
+<div class="warn"><strong>Common silent bug.</strong> A plain list's <code>pop(0)</code> is O(n), because every remaining element shifts left one slot. Using a list as a BFS queue turns an O(n) traversal into O(n&sup2;) with no error message.</div>`},
+  {h:"heapq is min-only", b:`<p><code>heapq</code> gives you a min-heap and nothing else. <code>heappush</code>, <code>heappop</code>, and <code>heap[0]</code> peeks at the smallest. For a max-heap, push negated values and negate again on the way out.</p>
+<p><code>bisect_left(arr, x)</code> returns the index where <code>x</code> keeps a sorted list sorted. It is binary search you do not have to write, and it is worth reaching for when the problem only needs the position.</p>`}
+ ],
+ cards:[
+  {t:"recall", q:"What breaks when you use a plain Python list as a BFS queue?", a:`<p><code>list.pop(0)</code> is O(n), not O(1). Removing the front element shifts every remaining element left one position.</p><p>The traversal still returns the right answer, so nothing fails visibly — it just becomes O(n&sup2;). Use <code>collections.deque</code> and <code>popleft()</code>, which is O(1).</p>`},
+  {t:"recall", q:"heapq gives you which kind of heap, and how do you get the other one?", a:`<p>Min-heap only. <code>heap[0]</code> is always the smallest element.</p><p>For a max-heap, push <code>-value</code> and negate on retrieval. There is no max-heap flag or comparator argument.</p>`},
+  {t:"recall", q:"What does defaultdict(list) save you from writing?", a:`<p>The key-existence check. Without it you need <code>if k not in d: d[k] = []</code> before every append.</p><p>With <code>defaultdict(list)</code>, <code>d[k].append(x)</code> works on a key that has never been touched. Use <code>defaultdict(int)</code> for counters that start at zero.</p>`}
+ ]
+},
+
+{
+ n:1, title:"Complexity, arrays, hash maps",
+ lede:"What Big-O actually measures, why array indexing is free, and the mechanism that makes a dict lookup O(1).",
+ sections:[
+  {h:"What Big-O measures", b:`<p>How fast the work grows as the input grows. Not seconds.</p>
+<p>Seconds depend on your CPU, your language, and what else is running. The same O(n&sup2;) code produces wildly different seconds on a laptop and a Raspberry Pi, but the same Big-O. Growth rate is a property of the algorithm; runtime is a property of the machine. That is what makes Big-O portable, and it is the answer an interviewer is listening for.</p>
+<table><tr><th>Class</th><th>Meaning</th><th>Example</th></tr>
+<tr><td class="mono">O(1)</td><td>input size irrelevant</td><td>arr[5], d[key]</td></tr>
+<tr><td class="mono">O(log n)</td><td>halve the problem each step</td><td>binary search</td></tr>
+<tr><td class="mono">O(n)</td><td>one pass</td><td>scanning a list</td></tr>
+<tr><td class="mono">O(n log n)</td><td>sorting</td><td>sorted(arr)</td></tr>
+<tr><td class="mono">O(n&sup2;)</td><td>nested loop, same data</td><td>naive Two Sum</td></tr>
+<tr><td class="mono">O(2&#8319;)</td><td>branch twice per element</td><td>naive subsets</td></tr></table>
+<p>At a million items, O(log n) is about 20 steps, O(n) is a million, O(n&sup2;) is a trillion. That gap is the entire reason this topic exists.</p>`},
+  {h:"Calculating it", b:`<p>Drop the constants. Three sequential loops over the same list is 3n steps, which is O(n) — the growth shape is identical, only the slope changed.</p>
+<p>Keep the dominant term. n&sup2; + 5n + 100 is O(n&sup2;), because at large n the n&sup2; term swamps everything else.</p>
+<div class="warn"><strong>The reflex error.</strong> A loop over <code>n</code> containing a loop over a <em>different</em> list of size <code>m</code> is O(n &times; m), not O(n&sup2;). When m is small — a million records checked against a five-item blocklist — that distinction is the difference between fast and unusable.</div>`},
+  {h:"Why arr[500] is O(1)", b:`<p>The computer never travels to the element. It computes the address:</p>
+<pre><code>address = start_address + (index &times; item_size)</code></pre>
+<p>One multiply, one add, then a direct read.</p>
+<p>Two conditions make that formula valid: the array is <strong>contiguous</strong>, one unbroken block of memory, and every element is the <strong>same size</strong>. Break either and the arithmetic is wrong, so the O(1) disappears. This is exactly why a linked list cannot index in O(1) no matter how much you know about the position.</p>
+<p>Searching for a <em>value</em> is O(n) for the opposite reason. There is no relationship between a value and its position — 500 could sit at index 0 or index 9999. No formula gets you there, so you check slot by slot. The exception is a sorted array, where position does carry information about value, and that is the basis of binary search.</p>
+<table><tr><th>Array operation</th><th>Cost</th><th>Reason</th></tr>
+<tr><td>access by index</td><td class="mono">O(1)</td><td>address arithmetic</td></tr>
+<tr><td>search by value</td><td class="mono">O(n)</td><td>position tells you nothing</td></tr>
+<tr><td>append</td><td class="mono">O(1) amortized</td><td>spare capacity usually there</td></tr>
+<tr><td>insert or delete in middle</td><td class="mono">O(n)</td><td>everything after it shifts</td></tr></table>
+<p>Amortized append: occasionally the block is full, so Python allocates a larger one and copies everything, which is O(n). Because it grows by a proportion rather than by one slot, that cost spreads across many appends and averages to O(1).</p>`},
+  {h:"How a hash map achieves O(1)", b:`<p>A hash function takes a key and produces <strong>a number</strong>. That number, reduced modulo the table size, identifies which slot to use.</p>
+<pre><code>"ana"  &rarr;  hash()  &rarr;  8417362...  &rarr;  % table_size  &rarr;  slot 14</code></pre>
+<p>The value only appears at the last step, when the map reads that slot. The hash function has no knowledge of the value; its entire job is key to address. Same trick as the array — compute the location rather than search for it — except the index can now be a string or a tuple instead of an integer.</p>
+<p>Worst case is O(n) because two keys can hash to the same slot. Collisions are unavoidable: infinite possible keys, finite table. A slot holding several entries must be searched linearly, so the map jumps to the address instantly and then walks the chain comparing keys. If every key lands in one slot, that walk is n comparisons and you are back to scanning.</p>
+<p>Load factor is the defense. Real hash tables keep spare empty slots and resize when they fill past a threshold, keeping chains near length one. The memory cost is not incidental — the empty space is what buys the O(1).</p>`},
+  {h:"The pattern", b:`<p>When you are about to loop over a list inside another loop over the same list, ask whether a hash map could remember what you have already seen. That single move converts O(n&sup2;) to O(n) more often than anything else in interview problems.</p>
+<pre><code>def two_sum(nums, target):
+    seen = {}                      <span class="cm"># value -&gt; index</span>
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:     <span class="cm"># O(1)</span>
+            return [seen[complement], i]
+        seen[num] = i              <span class="cm"># store AFTER the check</span>
+    return []</code></pre>
+<div class="warn"><strong>Order matters.</strong> With <code>nums = [3, 5]</code> and target 6: storing before the check means the lookup finds the 3 you just inserted and returns <code>[0, 0]</code>, using one element twice. Checking first guarantees <code>seen</code> holds only strictly earlier indices, so every hit is a different element.</div>`}
+ ],
+ cards:[
+  {t:"recall", q:"Why don't we measure algorithms in seconds?", a:`<p>Seconds depend on the machine — CPU, language, what else is running. The same O(n&sup2;) code gives completely different seconds on a laptop and a Raspberry Pi.</p><p>Big-O measures how fast the work grows as the input grows, which is a property of the algorithm itself. That is what makes it portable across machines.</p>`},
+  {t:"recall", q:"n&sup2; + 5n + 100 — what class, and which rule did you apply?", a:`<p>O(n&sup2;). Keep the dominant term.</p><p>At large n the n&sup2; term swamps everything else, so the lower-order terms and the constant contribute nothing to the growth shape. The companion rule is drop the constants: 3n is still O(n).</p>`},
+  {t:"recall", q:"A loop over n containing a loop over a different list of size m. What class, and why do people get this wrong?", a:`<p>O(n &times; m), not O(n&sup2;).</p><p>People answer O(n&sup2;) by reflex because they pattern-match on "nested loop." It matters when m is small — a million records checked against a five-item blocklist is effectively linear, not quadratic.</p>`},
+  {t:"recall", q:"Why is arr[500] O(1)? Give the actual mechanism, not the fact.", a:`<p>The computer computes the address rather than travelling to it: <code>start_address + (500 &times; item_size)</code>. One multiply, one add, one read.</p><p>Two conditions make that arithmetic valid — the array is contiguous, and every element is the same size. Break either and O(1) is gone. Knowing the position is not sufficient on its own; a linked list node's position is knowable and still costs O(k) to reach.</p>`},
+  {t:"recall", q:"A hash function takes a key. What comes out? Do not say &ldquo;value.&rdquo;", a:`<p>A number, which after a modulo by the table size identifies a slot.</p><p>The hash function has no knowledge of the value. The sequence is key &rarr; number &rarr; slot &rarr; read the slot. The value only enters at the last step.</p>`},
+  {t:"recall", q:"Given how hashing works, why is a hash map's worst case O(n)?", a:`<p>Collisions. Infinite possible keys, finite table, so two keys can land in the same slot.</p><p>A slot holding multiple entries has to be searched linearly — the map jumps to the address instantly, then walks the chain comparing keys one at a time. All n keys in one slot means n comparisons, which is scanning, the exact thing hashing was meant to avoid.</p><p>Load factor is the defense: keep spare empty slots, resize when full, keep chains near length one. That wasted space is what buys the O(1).</p>`},
+  {t:"recall", q:"Why is appending to a Python list O(1) amortized rather than plain O(1)?", a:`<p>Usually there is spare capacity in the allocated block, so the append is one write.</p><p>Occasionally the block is full, so Python allocates a larger one and copies every element, which is O(n). Because it grows by a proportion rather than by a single slot, that expensive copy happens rarely enough that the cost spreads thin and averages to O(1) per append.</p>`},
+  {t:"code", q:"Write Two Sum from memory.", a:`<pre><code>def two_sum(nums, target):
+    seen = {}                      <span class="cm"># value -&gt; index</span>
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i              <span class="cm"># AFTER the check</span>
+    return []</code></pre><p>Check for the store placed after the lookup, and for <code>enumerate</code> rather than <code>range(len(nums))</code>.</p>`},
+  {t:"recall", q:"In Two Sum, why is the dict written to after the lookup rather than before?", a:`<p>Storing first lets an element match itself. With <code>[3, 5]</code> and target 6: at i=0 the complement is 3, and if you already stored <code>{3: 0}</code> the lookup hits and returns <code>[0, 0]</code>.</p><p>Checking first guarantees <code>seen</code> contains only strictly earlier indices, so every hit is a genuinely different element. Confirm with <code>[4, 4]</code> and target 8 — at i=0 the dict is empty so no false hit, and at i=1 the stored 4 is found correctly.</p>`}
+ ]
+},
+
+{
+ n:2, title:"Two pointers and sliding window",
+ lede:"Two indices whose relationship encodes progress, and the window that reuses state instead of rebuilding it.",
+ sections:[
+  {h:"Converging pointers", b:`<pre><code>def two_sum_sorted(nums, target):
+    left, right = 0, len(nums) - 1
+    while left &lt; right:
+        total = nums[left] + nums[right]
+        if total == target:
+            return [left, right]
+        elif total &lt; target:
+            left += 1      <span class="cm"># need bigger; left is the only way up</span>
+        else:
+            right -= 1     <span class="cm"># need smaller</span>
+    return []</code></pre>
+<p>What makes this O(n) instead of O(n&sup2;): each comparison eliminates an entire row or column of the pair space. When the sum is too small, <em>every</em> pair involving <code>nums[left]</code> is too small, because <code>nums[right]</code> is already the largest remaining. So you discard <code>left</code> outright rather than testing it against everything else.</p>
+<p>Sortedness is what licenses that inference. Without it a single comparison tells you nothing about the other pairs, which is why 3Sum begins with a sort.</p>`},
+  {h:"Fast and slow", b:`<p>Both pointers start at the left and move at different speeds. This detects cycles and finds midpoints in linked lists, and it also underpins in-place array filtering, where the slow pointer marks the position the next kept element belongs in.</p>`},
+  {h:"Sliding window", b:`<p>A window is a contiguous range <code>[left, right]</code>. Extend <code>right</code> to grow it, advance <code>left</code> to shrink it. It slides forward and never backward.</p>
+<p>Why this beats brute force: checking every substring is O(n&sup2;) or worse because each candidate is rebuilt from scratch. A window <strong>reuses</strong> the previous state — adding one element and removing one element is O(1), so the whole scan is O(n) and every index is visited at most twice, once by each pointer.</p>
+<pre><code>def longest_unique_substring(s):
+    seen = {}                      <span class="cm"># char -&gt; last index</span>
+    left = 0
+    best = 0
+    for right, char in enumerate(s):
+        if char in seen and seen[char] &gt;= left:
+            left = seen[char] + 1  <span class="cm"># jump past the duplicate</span>
+        seen[char] = right
+        best = max(best, right - left + 1)
+    return best</code></pre>
+<div class="warn"><strong>The most common sliding-window bug.</strong> Omitting <code>seen[char] &gt;= left</code>. The dict retains characters that have already fallen out of the window on the left, and those entries are stale. Without the bounds check you move <code>left</code> backward, the window grows incorrectly, and the answer comes out too large.</div>
+<p>The other formulation shrinks with a <code>while</code> loop, which generalizes better to counting conditions: expand unconditionally, shrink while the condition is violated, record the answer.</p>`},
+  {h:"Which one to reach for", b:`<table><tr><th>Signal in the problem</th><th>Pattern</th></tr>
+<tr><td>sorted array, find a pair or triplet</td><td>converging pointers</td></tr>
+<tr><td>palindrome, reverse in place</td><td>converging pointers</td></tr>
+<tr><td>linked list cycle or midpoint</td><td>fast and slow</td></tr>
+<tr><td>contiguous subarray or substring</td><td>sliding window</td></tr>
+<tr><td>longest or shortest with a constraint</td><td>variable window</td></tr>
+<tr><td>subarray of exactly size k</td><td>fixed window</td></tr></table>
+<p>The word <strong>contiguous</strong> is the strongest tell for a window. If the problem lets you skip elements, a window cannot represent the answer.</p>`}
+ ],
+ cards:[
+  {t:"recall", q:"Why do converging two pointers require a sorted array?", a:`<p>Because sortedness is what lets a single comparison eliminate a whole group of candidates.</p><p>When the sum is too small, every pair involving <code>nums[left]</code> is too small — <code>nums[right]</code> is already the largest value remaining, so nothing else could rescue it. You discard <code>left</code> entirely. Without sorting, one comparison tells you nothing about the other pairs and you are back to checking all of them.</p>`},
+  {t:"recall", q:"Why is a sliding window O(n) when checking every substring is O(n&sup2;)?", a:`<p>The window reuses the previous state instead of rebuilding it. Adding the element at <code>right</code> and removing the element at <code>left</code> are both O(1) updates.</p><p>Each index is visited at most twice — once when <code>right</code> passes it, once when <code>left</code> does — so the total work is linear even though the code has two nested-looking loops.</p>`},
+  {t:"code", q:"Write longest substring without repeating characters.", a:`<pre><code>def longest_unique_substring(s):
+    seen = {}
+    left = 0
+    best = 0
+    for right, char in enumerate(s):
+        if char in seen and seen[char] &gt;= left:
+            left = seen[char] + 1
+        seen[char] = right
+        best = max(best, right - left + 1)
+    return best</code></pre><p>The line to check is the bounds test. If you wrote <code>if char in seen</code> without <code>and seen[char] &gt;= left</code>, mark this missed.</p>`},
+  {t:"recall", q:"What goes wrong if you omit the seen[char] >= left check in a sliding window?", a:`<p>The dict still holds characters that have already fallen out of the window on the left. Those entries are stale.</p><p>Hitting one moves <code>left</code> <em>backward</em>, which makes the window longer than it really is and returns an answer that is too large. It fails silently on inputs like <code>"abba"</code>.</p>`},
+  {t:"recall", q:"Which word in a problem statement is the strongest signal for sliding window?", a:`<p>Contiguous. Also its phrasings: substring, subarray, consecutive.</p><p>If the problem permits skipping elements — subsequence rather than substring — a window cannot represent the answer, because a window is by definition an unbroken range.</p>`},
+  {t:"recall", q:"What are the three parts of a variable-size sliding window?", a:`<p>Expand unconditionally: move <code>right</code> forward one element every iteration and add it to the window state.</p><p>Shrink conditionally: while the constraint is violated, remove the element at <code>left</code> and advance it.</p><p>Record: update the best answer, either after every expansion or after every shrink, depending on whether you want the longest or the shortest valid window.</p>`}
+ ]
+},
+
+{
+ n:3, title:"Binary search",
+ lede:"Halving the candidate space, and the version that searches an answer range rather than an array.",
+ sections:[
+  {h:"The mechanism", b:`<p>Each comparison eliminates half the remaining candidates. From n you go to n/2, then n/4, and the number of halvings before you reach one is log&#8322;(n). A million items takes about 20 comparisons.</p>
+<p>The precondition is that the search space is <strong>ordered with respect to your question</strong>. Not necessarily a sorted array — ordered with respect to the predicate you are testing. That distinction is what makes the second version below possible.</p>
+<pre><code>def binary_search(nums, target):
+    lo, hi = 0, len(nums) - 1
+    while lo &lt;= hi:                <span class="cm"># &lt;= : lo == hi is still a candidate</span>
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] &lt; target:
+            lo = mid + 1           <span class="cm"># +1: mid is already ruled out</span>
+        else:
+            hi = mid - 1
+    return -1</code></pre>
+<div class="warn"><strong>Where the bugs live.</strong> The <code>&lt;=</code> versus <code>&lt;</code> decides whether a one-element range gets examined. The <code>mid + 1</code> and <code>mid - 1</code> guarantee the range shrinks every iteration — writing <code>lo = mid</code> gives an infinite loop when <code>lo</code> and <code>hi</code> are adjacent, because <code>mid</code> rounds down to <code>lo</code> and nothing changes.</div>`},
+  {h:"Binary search on an answer space", b:`<p>This is the version interviewers ask about, and the reason the topic is worth two hours.</p>
+<p>When the question is "what is the smallest X that works," and the property is <strong>monotonic</strong> — if X works then every larger X also works — you can binary search the range of possible answers instead of an array. The sorted structure exists conceptually, not in memory.</p>
+<p>Koko Eating Bananas: find the minimum eating speed that clears all piles within h hours. Speeds run from 1 to max(piles). If speed 7 is fast enough then so is 8, and that monotonicity is the sorted array.</p>
+<pre><code>def min_eating_speed(piles, h):
+    def hours_needed(speed):
+        return sum((p + speed - 1) // speed for p in piles)
+
+    lo, hi = 1, max(piles)
+    while lo &lt; hi:                 <span class="cm"># &lt; : converging on a boundary</span>
+        mid = (lo + hi) // 2
+        if hours_needed(mid) &lt;= h:
+            hi = mid               <span class="cm"># mid might BE the answer, so keep it</span>
+        else:
+            lo = mid + 1
+    return lo</code></pre>
+<p>The loop shape changed. Searching for a boundary rather than an exact match uses <code>lo &lt; hi</code> and <code>hi = mid</code>, because the midpoint is still a live candidate. The loop ends when the two meet, and that value is the answer.</p>
+<p>Complexity is O(log(range) &times; cost of the check), here O(log(max_pile) &times; n).</p>
+<p>The trigger: "minimum X such that" or "maximum X such that", plus a check that is cheap to run and monotonic in X.</p>`},
+  {h:"Rotated arrays", b:`<p>A rotated sorted array is two sorted runs joined together. At any midpoint at least one half is properly sorted — compare <code>nums[mid]</code> against <code>nums[lo]</code> to find out which. Then check whether the target falls inside that sorted half's range and discard the other half.</p>
+<p>The invariant is that you always have enough local order to make the elimination decision, even though the array as a whole is not sorted.</p>`}
+ ],
+ cards:[
+  {t:"recall", q:"What is the actual precondition for binary search? Careful — it is not &ldquo;a sorted array.&rdquo;", a:`<p>The search space must be ordered with respect to the predicate you are testing.</p><p>A sorted array is the common case, but the general requirement is monotonicity: once the answer flips from no to yes, it never flips back. That is what makes binary search on an answer range legal even when nothing is sorted in memory.</p>`},
+  {t:"recall", q:"Why must you write lo = mid + 1 rather than lo = mid?", a:`<p>To guarantee the range shrinks every iteration.</p><p>When <code>lo</code> and <code>hi</code> are adjacent, <code>mid = (lo + hi) // 2</code> rounds down to <code>lo</code>. Assigning <code>lo = mid</code> changes nothing and the loop spins forever. The <code>+1</code> is also correct on the merits — <code>mid</code> was just tested and ruled out.</p>`},
+  {t:"recall", q:"When do you use `while lo <= hi` versus `while lo < hi`?", a:`<p><code>lo &lt;= hi</code> when searching for an exact match. A single-element range still needs to be examined, so the loop must run when the two meet.</p><p><code>lo &lt; hi</code> when converging on a boundary — the smallest value that satisfies something. There you pair it with <code>hi = mid</code> rather than <code>mid - 1</code>, because the midpoint may itself be the answer. The loop ends when they meet and that shared value is the result.</p>`},
+  {t:"recall", q:"What signals that a problem is binary search on an answer space rather than on an array?", a:`<p>The phrasing "minimum X such that" or "maximum X such that", combined with a check function that is cheap and monotonic in X.</p><p>Monotonic means: if X works, every larger X also works. That property is the sorted array — it just exists conceptually over the range of candidate answers rather than in memory.</p>`},
+  {t:"code", q:"Write Koko Eating Bananas — minimum speed to finish all piles in h hours.", a:`<pre><code>def min_eating_speed(piles, h):
+    def hours_needed(speed):
+        return sum((p + speed - 1) // speed for p in piles)
+
+    lo, hi = 1, max(piles)
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if hours_needed(mid) &lt;= h:
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo</code></pre><p>Check three things: <code>lo &lt; hi</code>, <code>hi = mid</code> without the minus one, and ceiling division in the helper.</p>`},
+  {t:"recall", q:"In a rotated sorted array, what lets you still eliminate half at each step?", a:`<p>At any midpoint, at least one of the two halves is properly sorted. A rotation joins two sorted runs, so the break point can only be in one half.</p><p>Compare <code>nums[mid]</code> to <code>nums[lo]</code> to identify the sorted half, check whether the target lies within that half's range, and discard the other half accordingly.</p>`}
+ ]
+},
+
+{
+ n:4, title:"Stacks and linked lists",
+ lede:"Pending work that resolves later, and pointer rewiring.",
+ sections:[
+  {h:"Stack", b:`<p>Last in, first out. A plain Python list is a stack: <code>append</code> to push, <code>pop</code> to pop, both O(1) at the end.</p>
+<p>Stacks matter because they express <strong>nesting and pending work</strong>. When you meet something whose resolution depends on what comes later, push it and resolve it when the answer arrives. In Valid Parentheses the stack holds exactly the still-unclosed context.</p>`},
+  {h:"Monotonic stack", b:`<p>Keep the stack sorted by popping anything that breaks the order before pushing. Each pop is the moment you learn the answer for the popped element.</p>
+<pre><code>def daily_temperatures(temps):
+    result = [0] * len(temps)
+    stack = []                                    <span class="cm"># indices, decreasing temps</span>
+    for i, t in enumerate(temps):
+        while stack and temps[stack[-1]] &lt; t:
+            prev = stack.pop()
+            result[prev] = i - prev               <span class="cm"># found its warmer day</span>
+        stack.append(i)
+    return result</code></pre>
+<p>This looks quadratic and is O(n). Every index is pushed once and popped at most once, so the total work across all iterations of the inner <code>while</code> is bounded by n. That amortized argument is what an interviewer wants to hear.</p>
+<p>The trigger is "next greater element," "next smaller," or any request for the nearest element in one direction satisfying a comparison.</p>`},
+  {h:"Linked lists", b:`<pre><code>class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next</code></pre>
+<p>A chain of nodes, each holding a value and a pointer. Not contiguous, so there is no address arithmetic and no O(1) indexing — reaching position k costs k steps. The trade is that insertion and deletion at a known position are O(1), because you rewire two pointers instead of shifting an array.</p>
+<pre><code>def reverse_list(head):
+    prev = None
+    curr = head
+    while curr:
+        next_node = curr.next   <span class="cm"># save it before destroying the link</span>
+        curr.next = prev        <span class="cm"># reverse the pointer</span>
+        prev = curr             <span class="cm"># advance prev</span>
+        curr = next_node        <span class="cm"># advance curr</span>
+    return prev                 <span class="cm"># prev is the new head</span></code></pre>
+<div class="warn"><strong>Save the next node first.</strong> Once you overwrite <code>curr.next</code>, the rest of the list is unreachable. The order of these four lines is the whole trick.</div>
+<p>Two techniques cover most of what remains. <strong>Fast and slow pointers</strong>: one moves one step, the other two. Meeting means a cycle; the fast one reaching the end leaves the slow one at the midpoint. <strong>Dummy head</strong>: allocate a throwaway node before the real head so inserting or deleting at position 0 needs no special case, and return <code>dummy.next</code>.</p>`}
+ ],
+ cards:[
+  {t:"code", q:"Write reverse a linked list.", a:`<pre><code>def reverse_list(head):
+    prev = None
+    curr = head
+    while curr:
+        next_node = curr.next
+        curr.next = prev
+        prev = curr
+        curr = next_node
+    return prev</code></pre><p>Check that saving <code>next_node</code> comes first, and that you return <code>prev</code> rather than <code>curr</code> — <code>curr</code> is None when the loop exits.</p>`},
+  {t:"recall", q:"Why does a monotonic stack run in O(n) when it contains a while loop inside a for loop?", a:`<p>Amortized counting. Each index is pushed exactly once and popped at most once across the entire run.</p><p>The inner <code>while</code> may do a lot of work on one iteration and none on the next, but the total number of pops over the whole loop is bounded by n. So the sum of all inner-loop work is linear, not quadratic.</p>`},
+  {t:"recall", q:"What phrasing in a problem points to a monotonic stack?", a:`<p>"Next greater element," "next smaller element," "days until warmer," "nearest larger to the right."</p><p>The shape is: for each element, find the nearest element in one direction satisfying a comparison. The stack holds elements still waiting for their answer, and popping one is the moment its answer is discovered.</p>`},
+  {t:"recall", q:"Why can't a linked list index in O(1) even though you know the position?", a:`<p>Nodes are not contiguous in memory. Each one sits wherever it was allocated, and the only way to find node k is to follow k pointers from the head.</p><p>The address formula <code>start + (index &times; size)</code> requires both contiguity and uniform element size. A linked list has neither, so knowing the position buys you nothing.</p>`},
+  {t:"recall", q:"What is a dummy head and what problem does it remove?", a:`<p>A throwaway node allocated before the real head, with the real list hanging off <code>dummy.next</code>. You return <code>dummy.next</code> at the end.</p><p>It removes the special case for operating at position 0. Deleting or inserting at the front normally needs separate code because there is no previous node to rewire; with a dummy there always is one, so a single code path handles every position.</p>`}
+ ]
+},
+
+{
+ n:5, title:"Trees and traversal",
+ lede:"Why recursion fits trees, and the two traversal shapes that cover most problems.",
+ sections:[
+  {h:"Why recursion fits", b:`<pre><code>class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right</code></pre>
+<p>Every subtree is itself a tree, so a function that handles "a tree" automatically handles every child by calling itself. Two parts are required: a base case, <code>if not node: return ...</code>, and a combination step that builds the parent's answer from the children's.</p>`},
+  {h:"Depth-first search", b:`<pre><code>def max_depth(root):
+    if not root:
+        return 0
+    return 1 + max(max_depth(root.left), max_depth(root.right))</code></pre>
+<p>The three orderings differ only in when the current node is processed relative to its children.</p>
+<table><tr><th>Order</th><th>Sequence</th><th>Use</th></tr>
+<tr><td>preorder</td><td>node, left, right</td><td>copying or serializing</td></tr>
+<tr><td>inorder</td><td>left, node, right</td><td>sorted output from a BST</td></tr>
+<tr><td>postorder</td><td>left, right, node</td><td>needs children's results first</td></tr></table>
+<p>Postorder is the one to internalize, because most tree problems compute something about a node from facts about its subtrees. Diameter is the example: the longest path through a node is left depth plus right depth, and you can only know that after both children report back.</p>
+<p>Time is O(n), every node visited once. Space is O(h) for the call stack, where h is the height — log n when balanced, n when degenerate into a chain, which is when recursion risks a stack overflow.</p>`},
+  {h:"Breadth-first search", b:`<pre><code>from collections import deque
+
+def level_order(root):
+    if not root:
+        return []
+    result = []
+    queue = deque([root])
+    while queue:
+        level_size = len(queue)                <span class="cm"># snapshot BEFORE the loop</span>
+        level = []
+        for _ in range(level_size):
+            node = queue.popleft()
+            level.append(node.val)
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+        result.append(level)
+    return result</code></pre>
+<div class="warn"><strong>Snapshot the level size.</strong> The queue grows while you are draining it. Without capturing <code>len(queue)</code> before the inner loop, you consume children in the same pass as their parents and the level boundaries disappear.</div>
+<p>Use DFS for depth, path, and subtree-property questions. Use BFS when the answer depends on level, or when you need the shortest path in an unweighted structure.</p>`}
+ ],
+ cards:[
+  {t:"recall", q:"Why does recursion fit trees so naturally? Name both required parts.", a:`<p>Every subtree is itself a tree, so a function written for "a tree" handles all children by calling itself.</p><p>The two parts: a base case, usually <code>if not node: return</code> something, and a combination step that builds this node's answer from the children's returned answers.</p>`},
+  {t:"recall", q:"Which traversal order should you reach for by default on tree problems, and why?", a:`<p>Postorder — left, right, node.</p><p>Most tree problems compute a fact about a node from facts about its subtrees, so you need both children's results before you can produce the parent's. Diameter is the clean example: the longest path through a node is left depth plus right depth, unknowable until both children report.</p>`},
+  {t:"code", q:"Write level-order traversal returning a list of levels.", a:`<pre><code>from collections import deque
+
+def level_order(root):
+    if not root:
+        return []
+    result = []
+    queue = deque([root])
+    while queue:
+        level_size = len(queue)
+        level = []
+        for _ in range(level_size):
+            node = queue.popleft()
+            level.append(node.val)
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+        result.append(level)
+    return result</code></pre><p>Check for the <code>level_size</code> snapshot and for <code>deque</code> with <code>popleft</code>.</p>`},
+  {t:"recall", q:"Why must you capture len(queue) before draining a level in BFS?", a:`<p>Because the queue grows while you drain it. Each node you pop appends its children to the same queue.</p><p>Without the snapshot, the inner loop keeps consuming past the current level into the children you just added, and the level boundaries vanish. You still visit every node, but you can no longer tell which level anything came from.</p>`},
+  {t:"recall", q:"What is DFS's space complexity on a tree, and when does that become a problem?", a:`<p>O(h), where h is the height — the call stack holds one frame per level on the current path.</p><p>A balanced tree gives h = log n, which is fine. A degenerate tree, essentially a linked list, gives h = n, and deep recursion can exceed Python's recursion limit. That is when you convert to an explicit stack.</p>`}
+ ]
+},
+
+{
+ n:6, title:"BSTs and heaps",
+ lede:"An ordering invariant that halves the search, and a structure that keeps only one guarantee.",
+ sections:[
+  {h:"The BST invariant", b:`<p>Everything in a node's left subtree is smaller, everything in its right subtree is larger. That invariant lets search discard half the tree at each step, giving O(h) lookup — O(log n) balanced, O(n) when degenerate into a chain.</p>
+<p>The property that solves most BST problems: <strong>an inorder traversal yields values in sorted order</strong>. Kth smallest is an inorder walk, stopped at k. Validating a BST is checking that the inorder sequence is strictly increasing.</p>
+<div class="warn"><strong>The validation trap.</strong> Comparing each node only against its immediate children is wrong. The invariant applies to the whole subtree, not the direct link, so a node can be larger than its parent and still violate an ancestor's bound.</div>
+<pre><code>def is_valid_bst(root):
+    def check(node, low, high):
+        if not node:
+            return True
+        if not (low &lt; node.val &lt; high):
+            return False
+        return (check(node.left, low, node.val) and
+                check(node.right, node.val, high))
+    return check(root, float('-inf'), float('inf'))</code></pre>
+<p>Lowest common ancestor is easier in a BST than in a general tree. Walk from the root: both targets smaller, go left; both larger, go right. The first node where they diverge, or that equals one of them, is the answer.</p>`},
+  {h:"Heaps", b:`<p>A heap maintains one guarantee only: the smallest element is at the root. It does <strong>not</strong> keep everything sorted, and that is precisely why it is cheap — full ordering would cost more than the problem needs.</p>
+<table><tr><th>Operation</th><th>Cost</th></tr>
+<tr><td>peek smallest, heap[0]</td><td class="mono">O(1)</td></tr>
+<tr><td>push</td><td class="mono">O(log n)</td></tr>
+<tr><td>pop smallest</td><td class="mono">O(log n)</td></tr>
+<tr><td>heapify a list</td><td class="mono">O(n)</td></tr></table>
+<pre><code>import heapq
+
+def kth_largest(nums, k):
+    heap = []
+    for num in nums:
+        heapq.heappush(heap, num)
+        if len(heap) &gt; k:
+            heapq.heappop(heap)     <span class="cm"># evict the smallest</span>
+    return heap[0]</code></pre>
+<p>This is O(n log k), better than sorting's O(n log n) when k is much smaller than n, and it works on a stream where sorting cannot, because you never hold all n elements.</p>
+<div class="warn"><strong>The inversion that confuses people.</strong> K <em>largest</em> uses a <em>min</em>-heap. The root being the weakest of your current keepers is exactly what makes eviction correct — any new element that beats it displaces it.</div>`}
+ ],
+ cards:[
+  {t:"recall", q:"What single property of a BST solves most BST problems?", a:`<p>An inorder traversal — left, node, right — visits values in sorted order.</p><p>Kth smallest becomes an inorder walk stopped at k. Validation becomes checking that the inorder sequence strictly increases. Anything phrased in terms of sorted order maps onto an inorder traversal.</p>`},
+  {t:"recall", q:"Why is checking each node against its immediate children the wrong way to validate a BST?", a:`<p>The invariant constrains the entire subtree, not just the direct parent-child link.</p><p>A node can satisfy its parent and still violate an ancestor's bound — sitting in the left subtree of a grandparent while being larger than it. The fix is to carry a low and high bound down the recursion, narrowing them at each step.</p>`},
+  {t:"code", q:"Write validate BST.", a:`<pre><code>def is_valid_bst(root):
+    def check(node, low, high):
+        if not node:
+            return True
+        if not (low &lt; node.val &lt; high):
+            return False
+        return (check(node.left, low, node.val) and
+                check(node.right, node.val, high))
+    return check(root, float('-inf'), float('inf'))</code></pre><p>Check that bounds narrow correctly: going left caps the high bound at the current value, going right raises the low bound to it.</p>`},
+  {t:"recall", q:"What does a heap guarantee, and what does it deliberately not guarantee?", a:`<p>It guarantees the smallest element is at the root, reachable in O(1).</p><p>It does not guarantee any ordering beyond that — the rest of the structure is only loosely arranged. That is the point: maintaining full sorted order would cost more than most problems need, and the heap buys cheap push and pop by not providing it.</p>`},
+  {t:"recall", q:"Kth largest uses which kind of heap, and why is that not backwards?", a:`<p>A min-heap of size k.</p><p>The root is the smallest of the k largest you have kept so far — the weakest keeper. When a new element arrives you compare against that weakest one, and if the newcomer beats it, it gets evicted. A max-heap would put your strongest element at the root, which tells you nothing about what to throw away.</p><p>Cost is O(n log k), and it works on a stream because you never hold all n elements.</p>`}
+ ]
+},
+
+{
+ n:7, title:"Graphs",
+ lede:"Trees with cycles, which means a visited set, plus the two orderings and topological sort.",
+ sections:[
+  {h:"Representation", b:`<pre><code>from collections import defaultdict, deque
+
+graph = defaultdict(list)
+for u, v in edges:
+    graph[u].append(v)
+    graph[v].append(u)     <span class="cm"># both directions only if undirected</span></code></pre>
+<p>Adjacency list is the default: O(V + E) space rather than the O(V&sup2;) of a matrix, and real graphs are sparse.</p>
+<p>A grid is a graph in disguise, and that is the form most interview problems take. Each cell is a node and its neighbours are the four adjacent cells. You never build the adjacency list — you compute neighbours with a direction array.</p>`},
+  {h:"The one difference from trees", b:`<p>Graphs have cycles, so you <strong>must</strong> track visited nodes. Omit it and you loop forever. That is the only structural difference between graph and tree traversal, and it causes most graph bugs.</p>
+<pre><code>def num_islands(grid):
+    if not grid:
+        return 0
+    rows, cols = len(grid), len(grid[0])
+    visited = set()
+    count = 0
+
+    def dfs(r, c):
+        stack = [(r, c)]
+        while stack:
+            row, col = stack.pop()
+            for dr, dc in ((1,0), (-1,0), (0,1), (0,-1)):
+                nr, nc = row + dr, col + dc
+                if (0 &lt;= nr &lt; rows and 0 &lt;= nc &lt; cols
+                        and grid[nr][nc] == "1"
+                        and (nr, nc) not in visited):
+                    visited.add((nr, nc))
+                    stack.append((nr, nc))
+
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == "1" and (r, c) not in visited:
+                visited.add((r, c))
+                dfs(r, c)
+                count += 1
+    return count</code></pre>
+<div class="warn"><strong>Mark visited when you push, not when you pop.</strong> Marking at pop time lets the same cell be added several times before its first pop, which wastes work and can blow up memory on a large grid.</div>
+<p>Both DFS and BFS are O(V + E), or O(rows &times; cols) on a grid.</p>`},
+  {h:"BFS gives shortest paths", b:`<p>On an unweighted graph, BFS reaches every node by the fewest possible edges, because it exhausts distance 1 before touching distance 2. DFS offers no such guarantee.</p>
+<p>Anything phrased as minimum steps, fewest moves, or elapsed time is BFS. Rotting Oranges is the standard example, and multi-source problems simply start with several nodes already in the queue.</p>`},
+  {h:"Topological sort", b:`<p>For a directed acyclic graph, an ordering where every node appears before everything that depends on it. Course prerequisites are the usual framing.</p>
+<pre><code>def can_finish(num_courses, prerequisites):
+    graph = defaultdict(list)
+    indegree = [0] * num_courses
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        indegree[course] += 1
+
+    queue = deque(i for i in range(num_courses) if indegree[i] == 0)
+    completed = 0
+    while queue:
+        node = queue.popleft()
+        completed += 1
+        for neighbor in graph[node]:
+            indegree[neighbor] -= 1
+            if indegree[neighbor] == 0:
+                queue.append(neighbor)
+    return completed == num_courses</code></pre>
+<p>Cycle detection falls out for free. Every node inside a cycle always has at least one unsatisfied incoming edge, so it never reaches indegree zero and never enters the queue. Counting completions and comparing against the total is how you detect that.</p>`}
+ ],
+ cards:[
+  {t:"recall", q:"What is the only structural difference between traversing a tree and traversing a graph?", a:`<p>Graphs have cycles, so you must track visited nodes.</p><p>A tree has exactly one path between any two nodes and no way back, so traversal terminates on its own. In a graph, without a visited set you follow a cycle forever. Everything else about DFS and BFS is identical.</p>`},
+  {t:"recall", q:"Should you mark a node visited when you push it or when you pop it?", a:`<p>When you push.</p><p>Marking at pop time means the same node can be pushed by several neighbours before its first pop. You then process it repeatedly and the frontier can grow far larger than the graph. The answer usually still comes out right, which is what makes this hard to catch.</p>`},
+  {t:"recall", q:"Why does BFS give shortest paths on an unweighted graph when DFS does not?", a:`<p>BFS exhausts every node at distance 1 before touching anything at distance 2, so the first time it reaches a node is necessarily by the fewest edges.</p><p>DFS commits to one branch and goes deep, so it may arrive at a node by a long route before ever seeing the short one. Nothing about the order guarantees minimality.</p>`},
+  {t:"code", q:"Write Kahn's algorithm for course schedule (can all courses be finished?).", a:`<pre><code>def can_finish(num_courses, prerequisites):
+    graph = defaultdict(list)
+    indegree = [0] * num_courses
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        indegree[course] += 1
+
+    queue = deque(i for i in range(num_courses) if indegree[i] == 0)
+    completed = 0
+    while queue:
+        node = queue.popleft()
+        completed += 1
+        for neighbor in graph[node]:
+            indegree[neighbor] -= 1
+            if indegree[neighbor] == 0:
+                queue.append(neighbor)
+    return completed == num_courses</code></pre><p>Check the edge direction — prereq points to course — and that you return a count comparison rather than True.</p>`},
+  {t:"recall", q:"How does Kahn's algorithm detect a cycle without any extra code?", a:`<p>By counting how many nodes it managed to output.</p><p>Every node inside a cycle permanently has at least one unsatisfied incoming edge, because its predecessor is also stuck. So its indegree never reaches zero and it never enters the queue. If the completed count is less than the total node count, the leftovers form a cycle.</p>`}
+ ]
+},
+
+{
+ n:8, title:"Backtracking",
+ lede:"DFS over a tree of decisions, with an undo on the way back up.",
+ sections:[
+  {h:"The mechanism", b:`<p>Each level of recursion is one choice; each root-to-leaf path is one candidate solution. Because only one path is explored at a time, you can maintain a single mutable path and undo each choice on the way back up. That undo is the backtracking.</p>
+<pre><code>def backtrack(path, choices):
+    if is_complete(path):
+        results.append(path[:])       <span class="cm"># COPY, not the reference</span>
+        return
+    for choice in choices:
+        path.append(choice)           <span class="cm"># choose</span>
+        backtrack(path, remaining)    <span class="cm"># explore</span>
+        path.pop()                    <span class="cm"># un-choose</span></code></pre>
+<div class="warn"><strong>Two failure points.</strong> The copy: <code>results.append(path)</code> stores a reference to a list that keeps mutating, so every stored result ends up identical and empty. The pop: forget it and the path accumulates choices from sibling branches.</div>`},
+  {h:"Subsets and the start parameter", b:`<pre><code>def subsets(nums):
+    results = []
+    path = []
+
+    def backtrack(start):
+        results.append(path[:])
+        for i in range(start, len(nums)):
+            path.append(nums[i])
+            backtrack(i + 1)          <span class="cm"># i+1: no reuse</span>
+            path.pop()
+
+    backtrack(0)
+    return results</code></pre>
+<p>The <code>start</code> parameter prevents duplicates. Without it you would generate <code>[1,2]</code> and <code>[2,1]</code> as separate subsets.</p>
+<p>In Combination Sum, where elements may be reused, you pass <code>i</code> instead of <code>i + 1</code> — a one-character change with a completely different meaning.</p>`},
+  {h:"Complexity", b:`<p>Exponential, and that is expected rather than a defect. There genuinely are 2&#8319; subsets and n! permutations, so nothing can enumerate them faster than they exist.</p>
+<table><tr><th>Problem</th><th>Time</th></tr>
+<tr><td>subsets</td><td class="mono">O(n &times; 2&#8319;)</td></tr>
+<tr><td>permutations</td><td class="mono">O(n &times; n!)</td></tr>
+<tr><td>word search</td><td class="mono">O(m &times; n &times; 4&#7480;)</td></tr></table>
+<p>The n multiplier is the cost of copying each completed path.</p>
+<p><strong>Pruning</strong> is the only lever. Stopping a branch as soon as it cannot succeed — sorting candidates and breaking once the remaining target goes negative — does not change the Big-O, but it often changes whether the solution finishes in time.</p>`}
+ ],
+ cards:[
+  {t:"code", q:"Write the generic backtracking template.", a:`<pre><code>def backtrack(path, choices):
+    if is_complete(path):
+        results.append(path[:])
+        return
+    for choice in choices:
+        path.append(choice)
+        backtrack(path, remaining)
+        path.pop()</code></pre><p>Three things to check: the slice copy on append, the pop after the recursive call, and the base case returning early.</p>`},
+  {t:"recall", q:"What happens if you write results.append(path) instead of path[:]?", a:`<p>You store a reference to the one list that every branch is mutating.</p><p>Every entry in <code>results</code> points at the same object, so they all show whatever the path happens to contain at the end — usually empty, since the final pops empty it. The bug looks like the algorithm found nothing.</p>`},
+  {t:"recall", q:"In subsets, what does the `start` parameter prevent, and what changes if you pass i instead of i+1?", a:`<p><code>start</code> prevents reordered duplicates. Without it you would generate <code>[1,2]</code> and <code>[2,1]</code> as separate subsets, because every level could pick any index.</p><p>Passing <code>i</code> instead of <code>i + 1</code> allows the same element to be reused at the next level. That is exactly the difference between subsets and Combination Sum, where a candidate may appear more than once.</p>`},
+  {t:"recall", q:"Backtracking is exponential. Is pruning supposed to fix that?", a:`<p>No. Pruning does not change the Big-O.</p><p>There genuinely are 2&#8319; subsets and n! permutations, so enumerating them cannot be faster than they exist. Pruning cuts branches that cannot succeed, which often decides whether a solution finishes within the time limit — but the complexity class is unchanged, and claiming otherwise in an interview is a mistake.</p>`}
+ ]
+},
+
+{
+ n:9, title:"Dynamic programming, one dimension",
+ lede:"Recursion where subproblems repeat, plus storage. The hard part is defining the state.",
+ sections:[
+  {h:"What it actually is", b:`<p>Recursion where subproblems repeat, plus storage so each one is solved once. Naive <code>fib(n)</code> recomputes <code>fib(3)</code> an exponential number of times; remember each result and the exponential collapses to linear. That is the whole idea, and the rest is bookkeeping.</p>
+<p>Two conditions must hold. <strong>Optimal substructure</strong>: the best answer for n is built from best answers to smaller inputs. <strong>Overlapping subproblems</strong>: those smaller inputs recur. Missing the second, you have plain recursion. Missing the first, DP does not apply at all.</p>`},
+  {h:"The three steps", b:`<p>Define the state — what does <code>dp[i]</code> mean? Write it as an English sentence before writing any code. This is the hard part and everything else follows from it.</p>
+<p>Write the recurrence — how does <code>dp[i]</code> follow from earlier entries?</p>
+<p>Set the base cases — the smallest inputs, answered directly.</p>
+<pre><code><span class="cm"># Climbing Stairs</span>
+<span class="cm"># state: dp[i] = number of distinct ways to reach step i</span>
+<span class="cm"># recurrence: dp[i] = dp[i-1] + dp[i-2]</span>
+
+def climb_stairs(n):
+    if n &lt;= 2:
+        return n
+    prev2, prev1 = 1, 2
+    for _ in range(3, n + 1):
+        prev2, prev1 = prev1, prev1 + prev2
+    return prev1</code></pre>
+<p>Only the last two values are ever needed, so the array collapses to two variables and space drops from O(n) to O(1). That applies whenever the recurrence looks back a fixed distance.</p>
+<p>House Robber shows the state definition doing real work. <code>dp[i]</code> as "the maximum obtainable from the first i houses" gives <code>dp[i] = max(dp[i-1], nums[i] + dp[i-2])</code>. Defining it as "the maximum if I rob house i" produces a much messier recurrence. When a DP problem feels impossible, the state definition is usually wrong, not the recurrence.</p>`},
+  {h:"Coin Change and why greedy fails", b:`<pre><code>def coin_change(coins, amount):
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0                                  <span class="cm"># zero coins make zero</span>
+    for a in range(1, amount + 1):
+        for coin in coins:
+            if coin &lt;= a:
+                dp[a] = min(dp[a], dp[a - coin] + 1)
+    return dp[amount] if dp[amount] != float('inf') else -1</code></pre>
+<p>Infinity encodes "unreachable" and propagates correctly, since <code>inf + 1</code> stays infinite. Complexity is O(amount &times; len(coins)).</p>
+<p>Worth seeing why greedy fails here. Coins <code>[1, 3, 4]</code>, amount 6: greedy takes 4, then 1, then 1, for three coins. The optimum is 3 + 3, two coins. Greedy commits to a locally best choice that forecloses a better global one, which is exactly the situation DP exists to handle.</p>`},
+  {h:"Top-down or bottom-up", b:`<p>Top-down is recursion plus a cache, and it only computes states it actually reaches. <code>@functools.lru_cache</code> gets you there in one line, which makes it fast to write under pressure.</p>
+<p>Bottom-up is a loop filling a table from the base cases. No recursion depth limit, and easier to space-optimize.</p>
+<p>Same complexity. Write whichever you can produce correctly.</p>
+<p>Recognizing DP: counting the number of ways, optimizing a maximum or minimum, or asking whether a target is reachable — combined with a sequence of choices where the current choice constrains future ones. If the choices are independent, it is not DP.</p>`}
+ ],
+ cards:[
+  {t:"recall", q:"What two conditions must hold for DP to apply?", a:`<p>Optimal substructure: the best answer to the whole problem is built from best answers to smaller subproblems.</p><p>Overlapping subproblems: those smaller subproblems recur many times. Without this you have ordinary recursion and caching buys nothing — merge sort has optimal substructure but no overlap, which is why it is divide and conquer rather than DP.</p>`},
+  {t:"recall", q:"Which of the three DP steps is the hard one, and what does that tell you when a problem feels impossible?", a:`<p>Defining the state — what <code>dp[i]</code> actually means. Write it as an English sentence before writing code.</p><p>When a DP problem feels impossible, the state definition is usually wrong rather than the recurrence. House Robber is the demonstration: "max from the first i houses" gives a clean recurrence, while "max if I rob house i" gives a messy one for the identical problem.</p>`},
+  {t:"code", q:"Write Coin Change (fewest coins to make amount).", a:`<pre><code>def coin_change(coins, amount):
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0
+    for a in range(1, amount + 1):
+        for coin in coins:
+            if coin &lt;= a:
+                dp[a] = min(dp[a], dp[a - coin] + 1)
+    return dp[amount] if dp[amount] != float('inf') else -1</code></pre><p>Check <code>dp[0] = 0</code> as the base case and the <code>-1</code> return when the amount is unreachable.</p>`},
+  {t:"recall", q:"Give the concrete case where greedy fails on Coin Change and DP does not.", a:`<p>Coins <code>[1, 3, 4]</code>, amount 6.</p><p>Greedy takes the largest coin that fits: 4, then 1, then 1 — three coins. The optimum is 3 + 3, two coins. Taking the 4 forecloses the better pairing, which is exactly the situation DP handles by considering every coin at every amount.</p>`},
+  {t:"recall", q:"Why can Climbing Stairs drop from O(n) space to O(1)?", a:`<p>The recurrence looks back a fixed distance — only <code>dp[i-1]</code> and <code>dp[i-2]</code> are ever read.</p><p>Nothing older is needed again, so the array collapses to two rolling variables. This works for any DP whose recurrence references a bounded number of previous entries; it does not work when you need arbitrary earlier states, as in longest increasing subsequence.</p>`}
+ ]
+},
+
+{
+ n:10, title:"Intervals",
+ lede:"Sort first. Which key you sort by is most of the topic.",
+ sections:[
+  {h:"The core move", b:`<p>Sort by start time. Almost every interval problem becomes straightforward afterward, and almost none is tractable before.</p>
+<p>The reason: once sorted by start, any interval that overlaps the current one must begin before the current one ends, and it is the <em>only</em> candidate you need to check. You compare against a running merged interval instead of against all others, which drops O(n&sup2;) to O(n log n) — where the sort dominates.</p>
+<pre><code>def merge(intervals):
+    intervals.sort(key=lambda x: x[0])
+    merged = [intervals[0]]
+    for start, end in intervals[1:]:
+        if start &lt;= merged[-1][1]:                    <span class="cm"># overlaps</span>
+            merged[-1][1] = max(merged[-1][1], end)   <span class="cm"># extend</span>
+        else:
+            merged.append([start, end])
+    return merged</code></pre>
+<div class="warn"><strong>The max matters.</strong> The new interval may be entirely contained inside the current merged one. Assigning <code>end</code> directly would shrink it.</div>`},
+  {h:"Overlap test", b:`<p>Two intervals <code>[a1, a2]</code> and <code>[b1, b2]</code> overlap when <code>a1 &lt;= b2 and b1 &lt;= a2</code>.</p>
+<p>Easier by negation: they fail to overlap only if one ends before the other starts. Two failure cases, and everything else is an overlap.</p>
+<p>Whether touching endpoints count is a problem-specific convention — <code>[1,2]</code> and <code>[2,3]</code> merge under <code>&lt;=</code> and do not under <code>&lt;</code>. Ask about this in an interview; it is a legitimate clarifying question and it changes the code.</p>`},
+  {h:"Start or end", b:`<p>Merging and inserting sort by <strong>start</strong>, because you build the result left to right.</p>
+<p>Maximizing the count of non-overlapping intervals sorts by <strong>end</strong>. Choosing the earliest-finishing interval leaves the most room for everything after it. That is a greedy argument, and it is one of the few places greedy is provably optimal.</p>`}
+ ],
+ cards:[
+  {t:"recall", q:"Why does sorting by start reduce interval merging from O(n&sup2;) to O(n log n)?", a:`<p>Once sorted by start, any interval overlapping the current one must begin before the current one ends — and it is the only candidate worth checking.</p><p>So you compare each interval against a single running merged interval rather than against all others. The pass is linear; the sort is what costs O(n log n).</p>`},
+  {t:"code", q:"Write merge intervals.", a:`<pre><code>def merge(intervals):
+    intervals.sort(key=lambda x: x[0])
+    merged = [intervals[0]]
+    for start, end in intervals[1:]:
+        if start &lt;= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return merged</code></pre><p>Check for the <code>max</code> on the extend line.</p>`},
+  {t:"recall", q:"Why does merging need max(merged[-1][1], end) rather than just end?", a:`<p>Because the incoming interval can be entirely contained within the current merged one.</p><p><code>[1, 10]</code> followed by <code>[2, 3]</code>: assigning <code>end</code> directly would shrink the merged interval to <code>[1, 3]</code> and silently drop coverage. The <code>max</code> keeps whichever endpoint is further right.</p>`},
+  {t:"recall", q:"When do you sort intervals by end rather than by start?", a:`<p>When maximizing the number of non-overlapping intervals you can keep — the activity-selection shape, including "minimum removals to make the rest non-overlapping."</p><p>Picking the earliest-finishing interval leaves the most room for everything after it. That is a greedy argument and it is provably optimal here, which is unusual.</p>`},
+  {t:"recall", q:"State the overlap test for [a1,a2] and [b1,b2], and the easier way to think about it.", a:`<p>They overlap when <code>a1 &lt;= b2 and b1 &lt;= a2</code>.</p><p>Easier by negation: they fail to overlap only if one ends before the other starts. Two failure cases, everything else overlaps.</p><p>Whether touching endpoints count is a convention the problem must specify — worth asking about in an interview, since it changes <code>&lt;=</code> to <code>&lt;</code>.</p>`}
+ ]
+}
+];
+
+/* ---------------- helpers ---------------- */
+function cid(t,i){ return "t" + t.n + "c" + i; }
+function topicCards(t){ return t.cards.map(function(c,i){ return {card:c, id:cid(t,i), topic:t}; }); }
+function allCards(){ var out=[]; T.forEach(function(t){ out = out.concat(topicCards(t)); }); return out; }
+function dueCards(list){ return list.filter(function(x){ return isDue(x.id); }); }
+function mastery(t){
+  var cs = topicCards(t);
+  var strong = cs.filter(function(x){ return cardState(x.id).box >= 2; }).length;
+  return {strong:strong, total:cs.length, due:dueCards(cs).length};
+}
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+
+/* ---------------- render: rail ---------------- */
+var view = {mode:"home", topic:null};
+
+function renderNav(){
+  var nav = document.getElementById("nav");
+  nav.innerHTML = "";
+  T.forEach(function(t){
+    var m = mastery(t);
+    var cls = m.due > 0 && m.strong > 0 ? "due" : (m.strong === m.total ? "done" : (m.strong > 0 ? "part" : ""));
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.setAttribute("aria-current", view.mode === "learn" && view.topic === t.n ? "true" : "false");
+    b.innerHTML = '<span class="num">' + t.n + '</span><span>' + t.title + '</span><span class="dot ' + cls + '"></span>';
+    b.onclick = function(){ view = {mode:"learn", topic:t.n}; render(); window.scrollTo(0,0); };
+    li.appendChild(b);
+    nav.appendChild(li);
+  });
+  var all = allCards();
+  var strong = all.filter(function(x){ return cardState(x.id).box >= 2; }).length;
+  document.getElementById("stats").textContent = strong + " of " + all.length + " cards holding";
+}
+
+/* ---------------- render: home ---------------- */
+function renderHome(){
+  var all = allCards();
+  var due = dueCards(all);
+  var unseen = all.filter(function(x){ return !cardState(x.id).seen; }).length;
+  var h = '<h1>Recall queue</h1>';
+  h += '<p class="lede">Every card asks you to produce the answer before you see it. Type it out — thinking it counts for much less.</p>';
+  h += '<div class="queue">';
+  h += '<p class="count' + (due.length ? '' : ' zero') + '">' + due.length + '</p>';
+  h += '<p>' + (due.length
+        ? 'cards due now, drawn from every topic you have started. ' + unseen + ' of them you have not seen before.'
+        : 'nothing due. Open a topic from the list to read it, or come back tomorrow — spacing is doing the work.') + '</p>';
+  if(due.length){ h += '<button class="btn" id="start">Start recall</button>'; }
+  h += '</div>';
+  h += '<h2>Where you stand</h2>';
+  h += '<table><tr><th>Topic</th><th>Holding</th><th>Due</th></tr>';
+  T.forEach(function(t){
+    var m = mastery(t);
+    h += '<tr><td>' + t.n + '. ' + t.title + '</td><td class="mono">' + m.strong + '/' + m.total + '</td><td class="mono">' + (m.due || "—") + '</td></tr>';
+  });
+  h += '</table>';
+  h += '<p class="hint" style="margin-top:22px;max-width:60ch">"Holding" means a card you have answered correctly at least twice in a row. It is not the same as being able to solve the problem, which only writing code will tell you.</p>';
+  document.getElementById("stage").innerHTML = h;
+  var s = document.getElementById("start");
+  if(s) s.onclick = function(){ startSession(shuffle(due)); };
+}
+
+/* ---------------- render: lesson ---------------- */
+function renderLesson(){
+  var t = T.filter(function(x){ return x.n === view.topic; })[0];
+  var m = mastery(t);
+  var h = '<h1>' + t.n + '. ' + t.title + '</h1>';
+  h += '<p class="lede">' + t.lede + '</p>';
+  t.sections.forEach(function(s){
+    h += '<h2>' + s.h + '</h2>' + s.b;
+  });
+  h += '<h2>Test yourself on this topic</h2>';
+  h += '<p>' + m.total + ' cards, ' + m.due + ' due. Answer from memory with this page closed.</p>';
+  h += '<div class="btnrow"><button class="btn" id="drill">Recall this topic</button>';
+  h += '<button class="btn ghost" id="home">Back to queue</button></div>';
+  document.getElementById("stage").innerHTML = h;
+  document.getElementById("drill").onclick = function(){ startSession(shuffle(topicCards(t))); };
+  document.getElementById("home").onclick = function(){ view={mode:"home",topic:null}; render(); window.scrollTo(0,0); };
+}
+
+/* ---------------- recall session ---------------- */
+var session = null;
+
+function startSession(queue){
+  session = {queue:queue, i:0, revealed:false, done:0, missed:0, total:queue.length};
+  view.mode = "recall";
+  render();
+  window.scrollTo(0,0);
+}
+
+function renderRecall(){
+  var s = session;
+  if(!s || s.i >= s.queue.length){ return renderSessionEnd(); }
+  var item = s.queue[s.i];
+  var c = item.card;
+  var h = '<div class="recall">';
+  h += '<div class="meter">';
+  for(var k=0;k<s.total;k++){ h += '<i class="' + (k < s.done ? 'on' : '') + '"></i>'; }
+  h += '</div>';
+  h += '<p class="prompt">' + c.q + '</p>';
+  h += '<p class="tag">topic ' + item.topic.n + " · " + (c.t === "code" ? "write the code" : "explain the mechanism") + '</p>';
+  h += '<textarea id="ans" placeholder="' + (c.t === "code" ? "Type the function. No notes." : "Type your answer in full sentences. No notes.") + '" spellcheck="false"></textarea>';
+  if(!s.revealed){
+    h += '<div class="btnrow"><button class="btn" id="reveal">Show answer</button></div>';
+    h += '<p class="hint">Write something before revealing, even if it is wrong. Recognising the right answer is not the same as producing it.</p>';
+  } else {
+    h += '<div class="answer"><h4>reference answer</h4>' + c.a + '</div>';
+    h += '<div class="grade"><span class="q">Did yours contain the mechanism, not just the conclusion?</span>';
+    h += '<button class="btn red" id="miss">Missed it</button>';
+    h += '<button class="btn blue" id="got">Got it</button></div>';
+  }
+  h += '</div>';
+  document.getElementById("stage").innerHTML = h;
+  var ta = document.getElementById("ans");
+  if(session.draft) ta.value = session.draft;
+  ta.oninput = function(){ session.draft = ta.value; };
+  if(!s.revealed) ta.focus();
+
+  var rv = document.getElementById("reveal");
+  if(rv) rv.onclick = function(){ session.revealed = true; render(); };
+  var g = document.getElementById("got");
+  if(g) g.onclick = function(){ advance(true); };
+  var mi = document.getElementById("miss");
+  if(mi) mi.onclick = function(){ advance(false); };
+}
+
+function advance(ok){
+  var item = session.queue[session.i];
+  grade(item.id, ok);
+  session.done++;
+  if(!ok){ session.missed++; session.queue.push(item); session.total++; }
+  session.i++;
+  session.revealed = false;
+  session.draft = "";
+  render();
+  window.scrollTo(0,0);
+}
+
+function renderSessionEnd(){
+  var s = session;
+  var h = '<h1>Session done</h1>';
+  h += '<div class="done-panel">';
+  h += '<p>' + s.done + ' answered, ' + s.missed + ' missed and requeued.</p>';
+  if(s.missed === 0){
+    h += '<p>Nothing missed. Either it has landed, or the cards were easier than what an interviewer will ask — the code-writing cards are the honest test, so weight those.</p>';
+  } else {
+    h += '<p>Missed cards reset to the front of the schedule and come back tomorrow. That is the point: the ones you get wrong are the only ones worth repeating.</p>';
+  }
+  h += '</div>';
+  h += '<div class="btnrow"><button class="btn" id="home2">Back to queue</button></div>';
+  document.getElementById("stage").innerHTML = h;
+  document.getElementById("home2").onclick = function(){ session=null; view={mode:"home",topic:null}; render(); window.scrollTo(0,0); };
+}
+
+/* ---------------- boot ---------------- */
+function render(){
+  renderNav();
+  if(view.mode === "recall") renderRecall();
+  else if(view.mode === "learn") renderLesson();
+  else renderHome();
+}
+document.getElementById("reset").onclick = function(){
+  if(confirm("Erase all card progress? This cannot be undone.")){
+    progress = {}; save(); session = null; view = {mode:"home", topic:null}; render();
+  }
+};
+render();
+</script>
+</body>
+</html>
